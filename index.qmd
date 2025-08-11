@@ -1,0 +1,223 @@
+---
+title: "Visualize embeddings using four popular dimensionality reduction techniques"
+format:
+  html:
+    theme: united
+    toc: true               # enable table of contents
+    number-sections: true   # enable numbered section titles
+    toc-depth: 3            # optional: how many heading levels to include in TOC
+---
+
+# How to reduce dimensionality in dataset
+
+- Feature elimination
+
+- Feature selection
+
+- Feature extraction
+
+# Global Structure vs Local Structure
+
+- Global structure refers to the overall shape or arrangement of the entire dataset.
+
+- Local structure refers to the relationships among nearby points or neighbors in the original high-dimensional space.
+
+# Principal Component Analysis 
+
+Principal Component Analysis (PCA) is a technique that reduces the number of variables in a dataset while preserving most of the variation (or information) present in the original data. It does this by transforming the original variables into a smaller set of new variables, called principal components, **which are uncorrelated** and ordered so that the first few capture most of the variation in the data. This gives **linear transformations** of the original data. These new features do not overlap with each other.
+
+## Steps
+
+1. Standardize the Data
+
+2. Calculate covariance Matrix
+
+3. Find the principal components
+
+## Example
+
+
+```{r, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(palmerpenguins)
+```
+
+
+```{r}
+pca_data <- penguins |>
+  drop_na() |>
+  select(where(is.numeric)) |>
+  select(-year) |>
+  scale() 
+pca_data |> head()
+```
+
+```{r}
+pca_fit <-  pca_data |>
+  prcomp()
+pca_fit
+```
+
+```{r}
+# Obtain eigenvalues and make a scree plot understand the contribution of each PC
+library(broom)
+pca_fit |>
+  tidy(matrix="eigenvalues")
+
+```
+
+```{r}
+pca_fit |>
+  tidy(matrix="eigenvalues") |>
+  ggplot(aes(x=PC, y=percent))+
+  geom_col(fill="red", alpha=0.7) +
+  scale_y_continuous(labels=scales::label_percent(),
+                     breaks = scales::breaks_pretty(n=6))+
+  labs(y= "Variance explained",
+       title="Scree plot")
+
+```
+
+
+```{r}
+pca_fit |>
+  tidy(matrix="eigenvalues") |>
+  ggplot(aes(x=PC, y=cumulative))+
+  geom_point(size=4) +
+  geom_line(color="red")+
+  scale_y_continuous(labels=scales::label_percent(),
+                     breaks = scales::breaks_pretty(n=6))+
+  labs(y= "Cumulative Variance explained",
+       title="Another Variant ofScree plot")
+
+```
+
+```{r}
+pca_fit |>
+  tidy("loadings")
+```
+
+```{r}
+pca_fit |>
+  augment(penguins %>% drop_na()) |>
+  as.data.frame() |>
+  head()
+```
+
+```{r}
+pca_fit |>
+  tidy("scores")
+```
+
+```{r}
+pca_fit |>
+  augment(penguins |> drop_na()) |>
+  rename_with(function(x){gsub(".fitted","",x)}) |>
+  ggplot(aes(x = PC1, y = PC2, color=species))+
+  geom_point() + 
+  scale_color_manual(values = c('#1f77b4', '#ff7f0e', '#2ca02c'))
+```
+
+
+```{r, warning=FALSE, message=FALSE}
+library(plotly)
+augmented_data <- pca_fit |>
+  augment(penguins |> drop_na()) |>
+  rename_with(~ gsub(".fitted", "", .x))
+augmented_data
+# Create 3D plot using plotly
+fig <- plot_ly(
+  data = augmented_data,
+  x = ~PC1,
+  y = ~PC2,
+  z = ~PC3,
+  color = ~species,
+  colors = c('#1f77b4', '#ff7f0e', '#2ca02c'),
+  type = 'scatter3d',
+  mode = 'markers'
+) 
+
+fig
+
+```
+
+```{r}
+pca_fit |>
+  augment(penguins |> drop_na()) |>
+  rename_with(function(x){gsub(".fitted","",x)}) |>
+  ggplot(aes(x = species, y = PC1, color=species))+
+  geom_jitter() +
+  scale_color_manual(values = c('#1f77b4', '#ff7f0e', '#2ca02c'))
+
+```
+
+# t-Distributed Stochastic Neighbor Embedding (t-SNE)
+
+It preserves local structure: points that are close together in the high-dimensional space stay close in the low-dimensional map.
+
+This is sensitive to parameters like perplexity (which balances attention between local and global structure).
+
+This is a non-linear dimension reduction technique.
+
+## Here's how t-SNE works:
+
+**Calculate Pairwise Similarities in High-Dimensional Space:**
+
+For each data point, t-SNE calculates the probability that other data points are its neighbors, based on their Euclidean distances.
+
+These probabilities are modeled using a Gaussian distribution, where closer points have higher probabilities of being neighbors.
+
+A key concept here is "perplexity," which can be thought of as a measure of the effective number of neighbors for each point. It influences the standard deviation of the Gaussian kernels, adapting to the local density of the data.
+
+**Calculate Pairwise Similarities in Low-Dimensional Space:**
+
+Initially, data points are randomly placed in the lower-dimensional space.
+
+Similarities between these low-dimensional points are then calculated using a Student's t-distribution (with one degree of freedom, also known as a Cauchy distribution). The heavy tails of the t-distribution allow dissimilar points to be placed further apart in the embedding, helping to prevent crowding in the center.
+
+**Minimize Kullback-Leibler Divergence:**
+
+The core of t-SNE lies in iteratively adjusting the positions of the low-dimensional points to minimize the difference between the high-dimensional and low-dimensional similarity distributions.
+
+This difference is quantified using the Kullback-Leibler (KL) divergence, a measure of how one probability distribution diverges from another.
+
+Gradient descent is used to optimize the positions of the low-dimensional points, pushing points with high similarity in the high-dimensional space closer together in the low-dimensional space, and pushing points with low similarity further apart.
+
+```{r, warning=FALSE}
+penguins <- penguins |> 
+  drop_na() |>
+  select(-year) |>
+  mutate(ID=row_number()) 
+```
+
+```{r}
+library(Rtsne)
+set.seed(142)
+tSNE_fit <- penguins |>
+  select(where(is.numeric)) |>
+  column_to_rownames("ID") |>
+  scale() |>
+  Rtsne()
+tSNE_fit$Y |> head()
+```
+
+Your turn: Visualize data in the reduced dimensional space generated by t-SNE
+
+# Uniform Manifold Approximation and Projection (UMAP)
+
+Preserves both local and global structure: It tries to maintain the local neighborhood relationships between points as well as overall data structure better than some other methods.
+
+Faster than t-SNE: UMAP is typically faster than t-SNE, especially on larger datasets.
+
+Scalable: It can handle large datasets efficiently.
+
+Flexible: Parameters can be tuned to emphasize local versus global structure.
+
+
+# Summary
+
+- Many dimensionality reduction methods like t-SNE focus mainly on preserving local structure but can distort global structure (clusters may look separated or mixed in misleading ways).
+
+- Methods like PCA preserve global structure well (linear relationships and distances), but sometimes fail to capture complex local neighborhood patterns.
+
+- UMAP tries to balance both: keeping local neighbors together while also maintaining a meaningful global layout

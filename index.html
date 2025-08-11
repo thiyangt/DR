@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.42">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Visualize embeddings using four popular dimensionality reduction techniques</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="index_files/libs/clipboard/clipboard.min.js"></script>
+<script src="index_files/libs/quarto-html/quarto.js"></script>
+<script src="index_files/libs/quarto-html/popper.min.js"></script>
+<script src="index_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="index_files/libs/quarto-html/anchor.min.js"></script>
+<link href="index_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="index_files/libs/quarto-html/quarto-syntax-highlighting-2f5df379a58b258e96c21c0638c20c03.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="index_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="index_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="index_files/libs/bootstrap/bootstrap-a5aeabbedee2b46feea1310651de26ad.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="index_files/libs/htmltools-fill-0.5.8.1/fill.css" rel="stylesheet">
+
+<script src="index_files/libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+
+<script src="index_files/libs/plotly-binding-4.11.0/plotly.js"></script>
+
+<script src="index_files/libs/typedarray-0.1/typedarray.min.js"></script>
+
+<script src="index_files/libs/jquery-3.5.1/jquery.min.js"></script>
+
+<link href="index_files/libs/crosstalk-1.2.1/css/crosstalk.min.css" rel="stylesheet">
+
+<script src="index_files/libs/crosstalk-1.2.1/js/crosstalk.min.js"></script>
+
+<link href="index_files/libs/plotly-htmlwidgets-css-2.11.1/plotly-htmlwidgets.css" rel="stylesheet">
+
+<script src="index_files/libs/plotly-main-2.11.1/plotly-latest.min.js"></script>
+
+
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#how-to-reduce-dimensionality-in-dataset" id="toc-how-to-reduce-dimensionality-in-dataset" class="nav-link active" data-scroll-target="#how-to-reduce-dimensionality-in-dataset"><span class="header-section-number">1</span> How to reduce dimensionality in dataset</a></li>
+  <li><a href="#global-structure-vs-local-structure" id="toc-global-structure-vs-local-structure" class="nav-link" data-scroll-target="#global-structure-vs-local-structure"><span class="header-section-number">2</span> Global Structure vs Local Structure</a></li>
+  <li><a href="#principal-component-analysis" id="toc-principal-component-analysis" class="nav-link" data-scroll-target="#principal-component-analysis"><span class="header-section-number">3</span> Principal Component Analysis</a>
+  <ul class="collapse">
+  <li><a href="#steps" id="toc-steps" class="nav-link" data-scroll-target="#steps"><span class="header-section-number">3.1</span> Steps</a></li>
+  <li><a href="#example" id="toc-example" class="nav-link" data-scroll-target="#example"><span class="header-section-number">3.2</span> Example</a></li>
+  </ul></li>
+  <li><a href="#t-distributed-stochastic-neighbor-embedding-t-sne" id="toc-t-distributed-stochastic-neighbor-embedding-t-sne" class="nav-link" data-scroll-target="#t-distributed-stochastic-neighbor-embedding-t-sne"><span class="header-section-number">4</span> t-Distributed Stochastic Neighbor Embedding (t-SNE)</a>
+  <ul class="collapse">
+  <li><a href="#heres-how-t-sne-works" id="toc-heres-how-t-sne-works" class="nav-link" data-scroll-target="#heres-how-t-sne-works"><span class="header-section-number">4.1</span> Here’s how t-SNE works:</a></li>
+  </ul></li>
+  <li><a href="#uniform-manifold-approximation-and-projection-umap" id="toc-uniform-manifold-approximation-and-projection-umap" class="nav-link" data-scroll-target="#uniform-manifold-approximation-and-projection-umap"><span class="header-section-number">5</span> Uniform Manifold Approximation and Projection (UMAP)</a></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">6</span> Summary</a></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Visualize embeddings using four popular dimensionality reduction techniques</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="how-to-reduce-dimensionality-in-dataset" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> How to reduce dimensionality in dataset</h1>
+<ul>
+<li><p>Feature elimination</p></li>
+<li><p>Feature selection</p></li>
+<li><p>Feature extraction</p></li>
+</ul>
+</section>
+<section id="global-structure-vs-local-structure" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Global Structure vs Local Structure</h1>
+<ul>
+<li><p>Global structure refers to the overall shape or arrangement of the entire dataset.</p></li>
+<li><p>Local structure refers to the relationships among nearby points or neighbors in the original high-dimensional space.</p></li>
+</ul>
+</section>
+<section id="principal-component-analysis" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Principal Component Analysis</h1>
+<p>Principal Component Analysis (PCA) is a technique that reduces the number of variables in a dataset while preserving most of the variation (or information) present in the original data. It does this by transforming the original variables into a smaller set of new variables, called principal components, <strong>which are uncorrelated</strong> and ordered so that the first few capture most of the variation in the data. This gives <strong>linear transformations</strong> of the original data. These new features do not overlap with each other.</p>
+<section id="steps" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="steps"><span class="header-section-number">3.1</span> Steps</h2>
+<ol type="1">
+<li><p>Standardize the Data</p></li>
+<li><p>Calculate covariance Matrix</p></li>
+<li><p>Find the principal components</p></li>
+</ol>
+</section>
+<section id="example" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="example"><span class="header-section-number">3.2</span> Example</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(palmerpenguins)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>pca_data <span class="ot">&lt;-</span> penguins <span class="sc">|&gt;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">drop_na</span>() <span class="sc">|&gt;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">where</span>(is.numeric)) <span class="sc">|&gt;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>year) <span class="sc">|&gt;</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale</span>() </span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>pca_data <span class="sc">|&gt;</span> <span class="fu">head</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     bill_length_mm bill_depth_mm flipper_length_mm body_mass_g
+[1,]     -0.8946955     0.7795590        -1.4246077  -0.5676206
+[2,]     -0.8215515     0.1194043        -1.0678666  -0.5055254
+[3,]     -0.6752636     0.4240910        -0.4257325  -1.1885721
+[4,]     -1.3335592     1.0842457        -0.5684290  -0.9401915
+[5,]     -0.8581235     1.7444004        -0.7824736  -0.6918109
+[6,]     -0.9312674     0.3225288        -1.4246077  -0.7228585</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>pca_fit <span class="ot">&lt;-</span>  pca_data <span class="sc">|&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">prcomp</span>()</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>pca_fit</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Standard deviations (1, .., p=4):
+[1] 1.6569115 0.8821095 0.6071594 0.3284579
+
+Rotation (n x k) = (4 x 4):
+                         PC1         PC2        PC3        PC4
+bill_length_mm     0.4537532 -0.60019490 -0.6424951  0.1451695
+bill_depth_mm     -0.3990472 -0.79616951  0.4258004 -0.1599044
+flipper_length_mm  0.5768250 -0.00578817  0.2360952 -0.7819837
+body_mass_g        0.5496747 -0.07646366  0.5917374  0.5846861</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Obtain eigenvalues and make a scree plot understand the contribution of each PC</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(broom)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>pca_fit <span class="sc">|&gt;</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tidy</span>(<span class="at">matrix=</span><span class="st">"eigenvalues"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 4
+     PC std.dev percent cumulative
+  &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;      &lt;dbl&gt;
+1     1   1.66   0.686       0.686
+2     2   0.882  0.195       0.881
+3     3   0.607  0.0922      0.973
+4     4   0.328  0.0270      1    </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>pca_fit <span class="sc">|&gt;</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tidy</span>(<span class="at">matrix=</span><span class="st">"eigenvalues"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span>PC, <span class="at">y=</span>percent))<span class="sc">+</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">fill=</span><span class="st">"red"</span>, <span class="at">alpha=</span><span class="fl">0.7</span>) <span class="sc">+</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels=</span>scales<span class="sc">::</span><span class="fu">label_percent</span>(),</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>                     <span class="at">breaks =</span> scales<span class="sc">::</span><span class="fu">breaks_pretty</span>(<span class="at">n=</span><span class="dv">6</span>))<span class="sc">+</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">y=</span> <span class="st">"Variance explained"</span>,</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">title=</span><span class="st">"Scree plot"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>pca_fit <span class="sc">|&gt;</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tidy</span>(<span class="at">matrix=</span><span class="st">"eigenvalues"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span>PC, <span class="at">y=</span>cumulative))<span class="sc">+</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size=</span><span class="dv">4</span>) <span class="sc">+</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">color=</span><span class="st">"red"</span>)<span class="sc">+</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels=</span>scales<span class="sc">::</span><span class="fu">label_percent</span>(),</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>                     <span class="at">breaks =</span> scales<span class="sc">::</span><span class="fu">breaks_pretty</span>(<span class="at">n=</span><span class="dv">6</span>))<span class="sc">+</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">y=</span> <span class="st">"Cumulative Variance explained"</span>,</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>       <span class="at">title=</span><span class="st">"Another Variant ofScree plot"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>pca_fit <span class="sc">|&gt;</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tidy</span>(<span class="st">"loadings"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 16 × 3
+   column               PC    value
+   &lt;chr&gt;             &lt;dbl&gt;    &lt;dbl&gt;
+ 1 bill_length_mm        1  0.454  
+ 2 bill_length_mm        2 -0.600  
+ 3 bill_length_mm        3 -0.642  
+ 4 bill_length_mm        4  0.145  
+ 5 bill_depth_mm         1 -0.399  
+ 6 bill_depth_mm         2 -0.796  
+ 7 bill_depth_mm         3  0.426  
+ 8 bill_depth_mm         4 -0.160  
+ 9 flipper_length_mm     1  0.577  
+10 flipper_length_mm     2 -0.00579
+11 flipper_length_mm     3  0.236  
+12 flipper_length_mm     4 -0.782  
+13 body_mass_g           1  0.550  
+14 body_mass_g           2 -0.0765 
+15 body_mass_g           3  0.592  
+16 body_mass_g           4  0.585  </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>pca_fit <span class="sc">|&gt;</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">augment</span>(penguins <span class="sc">%&gt;%</span> <span class="fu">drop_na</span>()) <span class="sc">|&gt;</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.data.frame</span>() <span class="sc">|&gt;</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  .rownames species    island bill_length_mm bill_depth_mm flipper_length_mm
+1         1  Adelie Torgersen           39.1          18.7               181
+2         2  Adelie Torgersen           39.5          17.4               186
+3         3  Adelie Torgersen           40.3          18.0               195
+4         4  Adelie Torgersen           36.7          19.3               193
+5         5  Adelie Torgersen           39.3          20.6               190
+6         6  Adelie Torgersen           38.9          17.8               181
+  body_mass_g    sex year .fittedPC1  .fittedPC2  .fittedPC3 .fittedPC4
+1        3750   male 2007  -1.850808 -0.03202119  0.23454869  0.5276026
+2        3800 female 2007  -1.314276  0.44286031  0.02742880  0.4011230
+3        3250 female 2007  -1.374537  0.16098821 -0.18940423 -0.5278675
+4        3450 female 2007  -1.882455  0.01233268  0.62792772 -0.4721826
+5        3650   male 2007  -1.917096 -0.81636958  0.69999797 -0.1961213
+6        3625 female 2007  -1.770356  0.36567266 -0.02841769  0.5046092</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>pca_fit <span class="sc">|&gt;</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tidy</span>(<span class="st">"scores"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1,332 × 3
+     row    PC   value
+   &lt;int&gt; &lt;dbl&gt;   &lt;dbl&gt;
+ 1     1     1 -1.85  
+ 2     1     2 -0.0320
+ 3     1     3  0.235 
+ 4     1     4  0.528 
+ 5     2     1 -1.31  
+ 6     2     2  0.443 
+ 7     2     3  0.0274
+ 8     2     4  0.401 
+ 9     3     1 -1.37  
+10     3     2  0.161 
+# ℹ 1,322 more rows</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>pca_fit <span class="sc">|&gt;</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">augment</span>(penguins <span class="sc">|&gt;</span> <span class="fu">drop_na</span>()) <span class="sc">|&gt;</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename_with</span>(<span class="cf">function</span>(x){<span class="fu">gsub</span>(<span class="st">".fitted"</span>,<span class="st">""</span>,x)}) <span class="sc">|&gt;</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> PC1, <span class="at">y =</span> PC2, <span class="at">color=</span>species))<span class="sc">+</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">'#1f77b4'</span>, <span class="st">'#ff7f0e'</span>, <span class="st">'#2ca02c'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(plotly)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>augmented_data <span class="ot">&lt;-</span> pca_fit <span class="sc">|&gt;</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">augment</span>(penguins <span class="sc">|&gt;</span> <span class="fu">drop_na</span>()) <span class="sc">|&gt;</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename_with</span>(<span class="sc">~</span> <span class="fu">gsub</span>(<span class="st">".fitted"</span>, <span class="st">""</span>, .x))</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>augmented_data</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 333 × 13
+   .rownames species island    bill_length_mm bill_depth_mm flipper_length_mm
+   &lt;chr&gt;     &lt;fct&gt;   &lt;fct&gt;              &lt;dbl&gt;         &lt;dbl&gt;             &lt;int&gt;
+ 1 1         Adelie  Torgersen           39.1          18.7               181
+ 2 2         Adelie  Torgersen           39.5          17.4               186
+ 3 3         Adelie  Torgersen           40.3          18                 195
+ 4 4         Adelie  Torgersen           36.7          19.3               193
+ 5 5         Adelie  Torgersen           39.3          20.6               190
+ 6 6         Adelie  Torgersen           38.9          17.8               181
+ 7 7         Adelie  Torgersen           39.2          19.6               195
+ 8 8         Adelie  Torgersen           41.1          17.6               182
+ 9 9         Adelie  Torgersen           38.6          21.2               191
+10 10        Adelie  Torgersen           34.6          21.1               198
+# ℹ 323 more rows
+# ℹ 7 more variables: body_mass_g &lt;int&gt;, sex &lt;fct&gt;, year &lt;int&gt;, PC1 &lt;dbl&gt;,
+#   PC2 &lt;dbl&gt;, PC3 &lt;dbl&gt;, PC4 &lt;dbl&gt;</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create 3D plot using plotly</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>fig <span class="ot">&lt;-</span> <span class="fu">plot_ly</span>(</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> augmented_data,</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> <span class="sc">~</span>PC1,</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> <span class="sc">~</span>PC2,</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">z =</span> <span class="sc">~</span>PC3,</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">color =</span> <span class="sc">~</span>species,</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">colors =</span> <span class="fu">c</span>(<span class="st">'#1f77b4'</span>, <span class="st">'#ff7f0e'</span>, <span class="st">'#2ca02c'</span>),</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">type =</span> <span class="st">'scatter3d'</span>,</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">mode =</span> <span class="st">'markers'</span></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>) </span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>fig</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="plotly html-widget html-fill-item" id="htmlwidget-e080d0a4191293791ad4" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-e080d0a4191293791ad4">{"x":{"visdat":{"652871996fc0":["function () ","plotlyVisDat"]},"cur_data":"652871996fc0","attrs":{"652871996fc0":{"x":{},"y":{},"z":{},"mode":"markers","color":{},"colors":["#1f77b4","#ff7f0e","#2ca02c"],"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatter3d"}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"scene":{"xaxis":{"title":"PC1"},"yaxis":{"title":"PC2"},"zaxis":{"title":"PC3"}},"hovermode":"closest","showlegend":true},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"x":[-1.8508077514031847,-1.3142762146899336,-1.3745365635194018,-1.88245548481382,-1.9170957179611445,-1.770356120557715,-0.81726635219886834,-1.7962545582875478,-1.9532095546334307,-1.567164749230507,-1.7453746196050939,-1.5734059027266096,-0.80351099301634399,-2.3466466399987271,-1.0034763229334236,-2.4046297369344041,-2.1105221467137665,-1.8542668220531398,-1.5027489501537947,-1.5787619947158962,-1.9255694447921605,-1.7603014761704652,-1.7010535087849126,-2.7100961830147354,-1.6798002395452998,-1.8771247589951303,-1.9079424194746835,-1.6543429727309551,-1.5161213136646376,-1.4442933306406578,-1.4384593784770532,-1.6322051089162075,-1.7307465352725522,-2.4040412628283598,-1.135937977282502,-2.2931199051760003,-0.97038844332885199,-2.3054372463199031,-0.57753282195319799,-2.0076586091505098,-0.87893991052915421,-1.9263569107640393,-1.7803061139733427,-1.4072835874798135,-1.5715639153438441,-1.1448210563142518,-1.8632793605943139,-0.78555169287527948,-2.4442139448136087,-1.2622829425119808,-1.5466875889107181,-1.2186145232703167,-2.2553711981715834,-1.5213031656491505,-2.0131274206194756,-1.1347103195787804,-1.5685530936378804,-0.92603824488676723,-2.2415225451905925,-0.91228775630886927,-1.3397906323047093,-1.2389044932372864,-1.7982276325000994,-0.59113606395673157,-2.1082475805319958,-1.2674362191265522,-1.0245570248694555,-0.40387099158667472,-1.5700757793341151,-0.585781064444024,-0.93901632358597675,-1.9244426712279217,-1.4541602723625748,-0.93610743305469368,-1.9664362989508211,-0.04676245034586729,-1.7891428305096626,-1.5234947027290304,-1.6792856562088803,-1.5939995268269456,-1.8407142895412403,-1.8545019796299318,-1.5527346210245132,-1.6196639107524755,-1.2633325933787907,-0.20009276223842482,-2.0240493960042434,-1.0041096001871883,-1.8679897824173946,-0.26363096562104293,-1.5772500972641117,-0.6837944673346612,-2.5254940779465405,-0.7784544976427108,-1.5932417287015845,-0.38559512073082969,-1.79831339263429,-1.5103855372605863,-1.9994265377607237,-1.8546141642658269,-0.84753540326391907,-1.7161211932682219,-1.9818113931642736,-0.21321379707143678,-0.73713077981621511,-0.64390602509747552,-1.4799713226378539,-0.73882875255242009,-1.7006516901879041,-0.63185728750492998,-1.8399634336201791,-1.6070488331150299,-1.7322411805031801,-1.6254768211498654,-1.9501221225425525,-1.6608932423644758,-1.8256180296879903,-0.66984654623863871,-1.8790821856545161,-0.87568147036130606,-1.5654958528202954,-0.61898601064557757,-1.6011754721378537,0.070075432875666949,-1.6582033383694952,-1.1324087374353282,-1.6779134716671846,-0.70732289421602035,-1.6858024799283844,-0.96889705273894833,-1.8790104457531278,-1.1076861554410053,-1.6535452420625001,-0.80372459669605689,-1.1803717397308107,-1.363180950943971,-1.9729320923211207,-1.0202284836496576,-1.6744144798305953,-1.7627475852124401,-1.1105260258072904,-2.0617090882942946,-1.5542648404455721,-1.3432232670965003,-1.570999202679856,-0.61737432153088767],"y":[-0.032021188124824254,0.44286030830818329,0.16098820775533629,0.01233267577117185,-0.81636957770499807,0.36567265895230089,-0.50048990134947913,0.24502520823177409,-0.99678284498131076,-0.57721330451091524,0.60932731960372988,-0.086705244481492805,-1.2916121847813873,0.64422158822107323,-1.9694586868233406,0.30850437925425034,0.13628804534881214,0.10898005699866536,0.28869354438006178,0.60302502982425854,0.29694810589270432,-0.13805200826210634,0.18752010925184789,0.20080412856665403,-0.28511326578506463,0.78140506808618304,0.40608396070570774,0.32779303861251541,-0.3259177712949809,0.98620113736280124,-1.0575044342878963,-0.54739961364958611,-0.27198519741186822,-0.067243955924172844,-0.35727216433459003,0.59290888005539299,-0.11733341511531273,0.44872885026292342,-1.0530018023241492,0.99577248947210018,-0.211760523553438,-0.34236630339693419,0.65642310697255801,-1.4360997909920186,0.3390821290342686,-0.27775260437505639,0.76617467102783998,-0.71007848863193967,0.7936568571016146,-0.24340113285777074,0.48104581752519421,-0.24678265111828573,1.1878354014075934,-0.034484071047400089,1.1242054545984674,-1.3113098567290773,0.83251489207047236,-0.082403252752246844,0.99541969892858717,-0.046922216576632564,1.4060466247466636,-0.44937285034259711,1.2309774681234149,-0.6848560198542667,0.47182369871418772,0.0054581835992094548,0.53235628174398453,-0.89280923220134722,0.84928032097021244,-0.41050308861850343,0.53922160412617659,-0.12198891622274469,1.3539626306397006,-0.55251919852274389,1.1172410905817569,-0.10074994763311926,0.18372630260176928,0.076284451145667301,0.56325952986674255,-0.90673740382881485,-0.056624703433574446,0.27029894755314915,-0.16866776487951052,-0.039973974411412837,0.63446643656343771,-0.071081663401270534,1.2061822271436913,0.087148151900260887,0.89253810757799568,-0.3628382122286033,0.11919200417540246,-0.14603319956137348,1.7596335553649207,-0.43892071914289027,0.73923459479293996,-0.86781609011593808,1.2765237893402901,-0.46613618588530203,0.21349774211931033,-0.16097973542247823,0.62187682798637345,-0.47680065250125103,0.81964920572471545,-0.70723583598365602,0.95305625629723745,-1.4771386793327945,0.35370427936454096,-0.75215597670901746,-0.9138785225346181,-0.30246205558771344,0.78799671907529178,-0.57202290085257035,1.06313107474837,-0.17403954197595367,0.94721256210995675,-0.30638372118529622,0.56512167452892026,-0.22413155813255833,1.5924681702703123,-0.34911336865632869,0.48661499062949143,-0.19171330528888086,0.68818271196899061,-0.33348271114336897,0.39391425362226878,-0.65604687311430765,0.32005258774216977,0.14816219605327269,0.55084891992565943,0.21567947139996707,0.88774642742318843,-0.74798595757845165,1.1195098532966143,0.17313502957312457,0.52241872479500218,0.43344353261813434,2.093593613086048,0.47835010845746934,1.000386577086779,-0.013201888891933106,-0.053762966152238169,0.38852407915395321,0.6947886151053061,0.34828245565690097,0.95736501144064401,-0.24656379567526013],"z":[0.23454869094238834,0.027428798621887407,-0.18940423082621927,0.62792772378384931,0.69999796730275543,-0.028417693477166273,1.3329977168156486,-0.62561263952306145,1.0390513696228239,2.0462181172867653,0.36429734018205712,0.36177664447542357,1.0882267789154023,0.46007840021796709,0.57900573191426752,-0.074332239997760396,0.27195284600797542,0.89012264183543444,0.42490682809122771,-0.034645679937549245,0.86205676345547344,-0.076589947988175588,-0.40602796320173606,-0.23862308213714867,0.24344387128192105,-0.66287362256026783,0.38773457820868673,-0.21983099873019385,0.22708510207367424,0.10768316894228924,1.2883698265180061,0.84946964133416281,-0.33672600071028824,0.20981808548957592,0.95072595000201621,-0.035427931882973995,0.31601530733057681,0.1620643447168082,0.59368898164081241,-0.39171726825396996,0.97368118607520104,-0.15754776005034449,0.35691664138276114,0.86155922823566455,-0.13991612615800481,0.68240643830155556,0.4744032123788603,0.60733724033099135,0.12167256871226972,0.074412635951335904,-0.07592541185375995,0.31882513628592996,-0.57545381897784087,0.71625367486529945,-0.12875265254543833,1.2085231788668551,0.00034170918509141002,0.29722124393468863,-0.40505711722064519,0.12174465672962101,0.058812084015914423,0.46118902218526869,-0.20638104025724102,0.86947418208681482,0.99871403249200097,0.36102568084954323,-0.042835524444859607,0.054105648448322996,0.51288954370758444,0.35987296301909422,-0.25605135343215901,0.76989854667078084,-0.032834811501645911,0.38812919865420636,0.16947436282979023,0.50106185963487038,0.67595293767862641,1.3886892308279317,0.12591839467847121,0.39404878088262429,0.92484086349926775,0.42243616571828146,0.71838694485839993,0.32104129634844936,0.68941293899048228,0.67830336180791595,0.29793989326855286,0.64471084432404802,0.04291658273004495,0.93706525691125497,0.44527334932311485,0.74392241036709283,-0.2979034977774877,0.15211134846100538,0.71018528880116305,1.3795161863458905,-0.64713541051590706,1.1874203591574688,-0.050226803035236411,0.11086081597058539,0.27216205718208925,0.88321755946062086,-0.43810566797956102,0.84049366531050207,0.21781802379543597,0.60994612674857418,-0.25421413367738233,0.69865312350613074,0.88693971565758645,0.21661725262023229,-0.58102629166177744,1.1568132823287844,0.10722595538306812,-0.19961151811453948,-0.08893811706586674,0.7395231637472337,-0.56696018705650597,0.36668877528706401,-0.34287870889752226,0.61011631242744058,-0.14867275128709523,0.50610427702060801,-0.4456313075182603,0.16798173018684573,-0.028659847285489537,-0.041485048840899208,0.47994208009697703,1.2152797830802187,-0.02357996183761657,0.0019408440142326122,0.13217360057571159,0.89343278971101669,-0.18425557801359332,0.56065563298245591,-0.29571707958447535,-0.36704287038589634,-0.031470902508149545,-0.18778174514807169,-0.33067106952766789,0.24018918276098983,0.72022239041061709,0.31184001744015144,0.41951886957719564,0.45968512592765137,0.31712083993425771,0.42995520845010804],"mode":"markers","type":"scatter3d","name":"Adelie","marker":{"color":"rgba(31,119,180,1)","line":{"color":"rgba(31,119,180,1)"}},"textfont":{"color":"rgba(31,119,180,1)"},"error_y":{"color":"rgba(31,119,180,1)"},"error_x":{"color":"rgba(31,119,180,1)"},"line":{"color":"rgba(31,119,180,1)"},"frame":null},{"x":[-0.79264400626786113,-0.3887838926575129,-0.51425346961677532,-1.1935828250780258,-0.30385537024539155,-0.32612328502953797,-1.6334623664937955,-0.078726743114822362,-0.4695872240683332,-0.41619261181467881,-0.5181343534131071,-0.57748314826140135,-0.7811325096813031,0.36903318042129363,-0.711428079372043,-0.059387724707237403,-0.83364245938717163,-0.13436890552801861,-1.059232832207212,0.10843633010790277,-1.3956954805083406,-0.65506095063515657,-1.4183856640140855,-0.51046647113943489,-0.78911157975261548,0.090299068450207548,-0.30109211038512068,-0.23259268004946521,-0.68530415730201866,0.55633759387446968,-1.4044313129657269,0.1751051415298569,-1.1895417782470146,0.26065446889363963,-0.47724750470507854,0.074379176853572732,-0.42003843367254245,0.72454839989751774,-1.0421359925195885,0.60055079914285625,0.13855116974191872,-0.83986049957793552,-0.47197664930211064,-0.52861886815888193,-0.14347748019587037,0.46146609945903189,-0.64451547299708234,0.43952293719065755,-0.91632821167990497,-0.030852755594256376,-0.18730016748475975,0.068608338571602451,-0.62801847582401782,0.019253737409672178,-1.3111261923258448,-0.33042805351137039,-0.84889245250441303,-0.13743694588596422,-0.051672387582655799,-1.0719040134282403,0.2145518213310289,-0.50512497966811742,-0.45078325059931768,0.55264285339575969,-0.73880174788665098,-0.36733695779246284,0.49161976786365402,-0.21309615037093921],"y":[-0.50154228962455538,-1.5721950303257268,-1.5686018639101493,-0.7049807690100498,-1.9736103085820338,-0.36364492830718054,-0.54941105047560046,-1.1754459480788377,-0.91393359371091898,-1.8584274695842578,-0.5009881715853638,-2.069519772221998,-0.32993701463889663,-1.2419816954250431,-0.11854434287096002,-1.6838101451390417,-1.7507091345433645,-1.7377042485763368,-0.76800586390760694,-1.005866007558424,0.1860681280487039,-0.5494148511081991,0.44527404561758188,-1.586880609989874,-0.50573943852717396,-1.6136993157305584,-1.136508237553598,-1.3073231735384161,-0.46871586204248938,-2.147092417766669,0.66921450665373283,-2.5987956823569549,0.43893754963332166,-1.4208168100916423,-1.1464949716892496,-0.20743461470529073,-0.81846564158960444,-2.368108863057218,0.056120471219991544,-2.1787401035037379,-1.4729731480960064,-0.31907446475391243,-1.4760137334234711,-0.029569150694090773,-1.0027191535738484,-1.3099855458258804,-0.88632592349175321,-1.5474656447901178,-1.3479382091631131,-0.64023606609575534,-0.056961746368200283,-1.5305081890396934,-0.18106774114263738,-1.7470167956380438,0.1963552313145524,-1.4883165377563634,0.19088285589788312,-1.674225378733571,-1.304114446905676,-1.0124216404307913,-1.7896007812533543,0.018552509376048403,-0.065350555999904081,-2.3440840385942479,-0.24778208130872525,-0.98959039793947179,-1.4826180996087057,-1.2596581465586609],"z":[-0.80625838777438308,-0.51016728471279948,-0.96202274125670306,-0.55305002004600257,-0.87427226198919894,-0.24338242612886171,-1.1139455953999029,-1.0373810724759873,-0.0030816075815940508,-0.68969547753260385,-0.60232055351374592,-0.66246344735640372,-0.96567613008891517,-0.85340026806696456,-0.88732136135908224,-0.35283101583819537,-0.86138344683915313,-2.2172951627958604,-0.71358531230051414,-0.34667689708926264,-0.56610583611065424,-1.218055055153564,-1.2247999946884145,-0.72630481538121505,-0.92619688711236225,-0.65268846534518432,-1.1068198214668545,-0.56564529640729821,-0.68600123008762459,-0.10173949522658721,-0.73411673457017934,-0.34433968958006134,-0.7902405483680276,-0.51412134609281146,-0.90683406859729665,-0.74972685679882256,-0.54126002629640713,0.41155312317919557,-1.7222515506820433,-0.24234674577736637,-0.12010709643062123,-0.8314957031679242,-0.95960387543692782,-0.81599557055766203,-1.1272153308466222,-0.33197368157280488,-1.3363880341334395,0.19241364308079142,-1.4886552086291625,-1.0940259192140636,-1.3292655863445271,-0.66179273697093521,-0.75167186941360109,-0.32101576182441111,-0.66050479007417917,-1.2338473749058352,-1.1351850817208118,-0.1132893096652558,-0.65744120703848719,-0.32411912407697629,-0.52819803598070258,-1.0845239677579666,-0.74610578225862734,-0.86793878833201576,-0.31559176181038645,-0.88666177320841233,-0.32946398272153643,-0.76481572931778974],"mode":"markers","type":"scatter3d","name":"Chinstrap","marker":{"color":"rgba(255,127,14,1)","line":{"color":"rgba(255,127,14,1)"}},"textfont":{"color":"rgba(255,127,14,1)"},"error_y":{"color":"rgba(255,127,14,1)"},"error_x":{"color":"rgba(255,127,14,1)"},"line":{"color":"rgba(255,127,14,1)"},"frame":null},{"x":[1.5911740434454946,2.8877082161219674,1.5492402862594166,2.6167476844313704,2.2312012346476364,1.5565478305309737,1.4541886229034708,2.0225059786776338,1.1677456603157816,1.8117853343354544,1.284255547797829,2.1666905257480056,1.6659324822542962,2.5021941085403103,1.0366368440957479,2.518587034966369,0.91011112970114716,3.0834210463965586,1.4585204074075335,2.4548433417929285,2.8157189548738097,1.7507110270597521,1.3749770539700741,1.6209781622135513,1.8518668506775517,1.780364132360758,2.3171362208032993,1.5696219340609501,2.5763980880857891,2.2298883857384273,1.1689393031767823,1.4555996362157724,3.7813278552473459,2.3299854201571502,2.138603794222556,1.5889474444271461,1.460518267566066,1.1100112176418264,1.7570827550731281,0.70882483698596932,2.7095339199983615,1.2457911146623712,1.8932650507941968,2.578611179123298,1.7618821802541142,1.1535933532014249,2.599681092693781,1.9632385968462285,1.7003682728276437,1.6277894903776953,2.5244463644148318,1.1556122550050731,2.4758113241281809,1.9011842503892389,1.7999464221734747,0.99849222489878486,1.8883571851570815,0.92952027198566922,2.7742091503458832,1.0749518910845157,2.212650785984418,1.4713383116550536,3.373100895194467,1.82941345206896,2.7697932217320815,2.8935944936805575,1.6797304257436534,2.8187378904686637,1.7356158822143519,1.8826041339400519,2.1002202506166645,2.024920792613278,1.5936185252276569,2.9006021506508866,1.4906492895364822,2.7722171966523632,1.7301961529166572,2.3517451589048433,1.7031466679891165,2.6959301657428645,1.6100923524791915,2.482906892100937,1.5818378562215858,2.6008709687226435,1.4803298084905621,2.6541965041345597,1.8423705003584148,2.8177071417957427,1.9378606602137387,2.6210331065005517,1.4897733211022008,2.605684949040767,1.5168470910196703,2.5697281000915471,1.834020326692908,2.0825565473362668,1.2949304962412367,2.4254842174492381,1.993725074978772,3.0848267335290109,1.7052480866426927,2.8576257640103098,1.9088618058995104,1.0175038277309494,2.6818992042490404,1.1244682826620376,1.9724350712205978,2.0980735166239546,3.0816750838445595,1.154869512912353,2.8756395405356954,1.5786970514583258,3.4740603900666311,2.6839536802431208,1.9947137515968234,1.8298972752033831,2.7473705380052058,1.7112783674913834,2.0155037158598037],"y":[1.3397795044938099,-0.46339265583019518,0.69571295883783257,-0.013702697770208855,0.56244082391092354,1.170252672647889,0.82209205363104954,0.35511432872668081,1.576545107807495,0.3101087112528283,1.6928527105512436,-0.2527545917460966,1.1879955158969457,0.39230293314522446,0.83558067624167576,-0.15285962735857503,1.7021188926179893,0.015883353939792455,0.77554714007476955,0.20098897829131354,0.32822046689688678,0.87480391577045957,0.77895394997654632,0.21275899316495611,1.6822827661025408,0.51297398796607629,0.31459846559172855,0.65548389994705081,-0.040714967312656725,0.28327644062611834,1.2794896624524468,0.87335969826123316,-1.833256534472298,0.29819755399073511,-0.25517226054332071,1.4781998910170082,-0.20581282439056511,1.4240192385617836,-0.035811680917060204,1.5642500671685196,-0.29613599279498548,1.2448338903171372,0.20209708351447259,-0.33899901896055123,1.2906836743009991,1.1515188501634899,-0.32599387776727962,1.3732487710902057,0.30974560004993396,0.84777667524613276,0.63281712898363596,0.97427545299262974,0.11976440705431719,0.7702522066083739,0.51509269372895594,1.3294264149286221,0.62668647996232729,1.1384509668975229,-0.086267495537739533,1.2147255006624931,0.56138965956835019,1.1089245438887976,-0.68840701588471476,0.94610521377917578,-0.64359427495144583,-0.37716955719568246,1.1981208354555815,0.0025111700558028693,0.41062505521950832,0.28491477834306245,0.077865917613221453,0.58004252477152984,0.5580501112065418,-0.19794535242374869,0.77315335682295339,-0.6084777560745791,1.1705815776459929,0.0021351812280634153,0.47264675686530649,-0.42730196683065569,0.60929798394249235,-0.26595709737372963,1.2047459738148056,-0.94517577420721732,1.1385572158200041,0.28590831454387039,0.82666107771023334,-0.96263957690601853,0.41275732586841463,-0.99897510025102476,0.85588233067640618,-0.32043022441001029,0.87445112522694801,-0.25947945900101771,-0.11601377426924499,0.6457999413172093,0.593620018947148,-0.62018306637371845,0.31208883159272272,-1.3836175917297715,0.24239577874733573,0.18079681700570813,-0.006140152458566861,1.1976514753302065,-0.61086121866701404,1.3177576856363866,0.25796453203863623,-0.0012802104840358014,-0.30304793539838193,0.80145582386133085,-0.60902791105245291,0.97432307349358982,-0.91607854149824863,-0.31644472366245274,0.97530373206955101,0.78333109779490206,-0.26615518064276522,0.72478443629710865,-0.33604800429812376],"z":[-0.72059226252877884,0.69342256313842898,-0.88504270506441451,0.25343402194885911,0.11304434809008934,-0.68281995822444164,-0.11517074665199034,0.31216705882163243,-0.4555626017481833,0.21791711997173635,0.15921802472212601,0.42160221514143092,-0.38122020185993072,0.33768399608563082,-0.61993863962019113,0.53717485605592363,-0.44808258451160354,0.83888648514619613,-0.2644725716618751,0.19471565022446591,0.03533307030886701,0.112808579810729,-0.52629085506891937,0.28966286205661596,0.068562266649835335,0.19854581605087984,0.38138028815841563,-0.67282209338814547,0.19851451674826126,0.32895405344121986,-0.0033741583644633644,0.014792836959142686,-0.025881962449560758,-0.097812897036398394,0.49248722075149698,0.16311002994061485,1.0515827242300226,-0.54814694406738684,0.08862181570343608,-0.66774397115975859,0.59132445781320198,-0.68231094262051162,-0.4746430092008343,0.30319693137475634,0.11950457089932454,-0.73605105299751783,0.24349977070719842,-0.083367515466041597,0.6026182125083297,-0.32274608382068948,-0.068447265701292115,-0.43396719480273382,-0.19806143410474286,-0.11309335307782309,0.44012975339905464,-0.49652577519244345,0.25815193790057167,-0.18606600088733327,0.21889977201121524,-0.76786630701130232,0.39159782956354861,-0.54519238565054007,0.038595496005501495,-0.18738416219927684,0.82503300924918932,0.78718630028122383,0.099679922007099464,0.10194095065011244,-0.25141852430824602,0.29899475321327906,0.16100697436270206,0.19386129927861562,-0.13543000648451747,0.86652393232844549,-0.62904909098853246,0.61620177271644172,-0.23401858432104233,1.3447860562505789,-0.68325280045372128,-0.086977109622116688,-0.38841495443564211,0.24865406081869856,-0.24930752576825738,0.70848157939153111,0.047495841098226965,-0.40947697993875842,-0.41966729641549716,0.48782707530917319,-0.047255170393524781,0.35377902934757133,-0.16844108368976124,0.57110674590857102,0.099468730844052944,0.034877419674297028,-0.14956059829394608,-0.050989886370505055,-0.7742395653768952,0.19251151298978353,-0.22138481941667776,0.044432188164500452,0.063941032306400136,0.3374002943494121,0.62648367594630017,0.25081917255813369,-0.14641568811348571,-0.21406772872048002,0.15645504433619939,-0.35341554797670227,0.79730452324907386,0.16124736495153977,0.37021660875947604,-0.52852751787352903,0.1396052453250014,0.89848820145585906,-0.37885523796169385,-0.24039591706085828,0.41867643359455453,0.26236898699680228,0.15509731508529334],"mode":"markers","type":"scatter3d","name":"Gentoo","marker":{"color":"rgba(44,160,44,1)","line":{"color":"rgba(44,160,44,1)"}},"textfont":{"color":"rgba(44,160,44,1)"},"error_y":{"color":"rgba(44,160,44,1)"},"error_x":{"color":"rgba(44,160,44,1)"},"line":{"color":"rgba(44,160,44,1)"},"frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>pca_fit <span class="sc">|&gt;</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">augment</span>(penguins <span class="sc">|&gt;</span> <span class="fu">drop_na</span>()) <span class="sc">|&gt;</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename_with</span>(<span class="cf">function</span>(x){<span class="fu">gsub</span>(<span class="st">".fitted"</span>,<span class="st">""</span>,x)}) <span class="sc">|&gt;</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> species, <span class="at">y =</span> PC1, <span class="at">color=</span>species))<span class="sc">+</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_jitter</span>() <span class="sc">+</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">'#1f77b4'</span>, <span class="st">'#ff7f0e'</span>, <span class="st">'#2ca02c'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="t-distributed-stochastic-neighbor-embedding-t-sne" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> t-Distributed Stochastic Neighbor Embedding (t-SNE)</h1>
+<p>It preserves local structure: points that are close together in the high-dimensional space stay close in the low-dimensional map.</p>
+<p>This is sensitive to parameters like perplexity (which balances attention between local and global structure).</p>
+<p>This is a non-linear dimension reduction technique.</p>
+<section id="heres-how-t-sne-works" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="heres-how-t-sne-works"><span class="header-section-number">4.1</span> Here’s how t-SNE works:</h2>
+<p><strong>Calculate Pairwise Similarities in High-Dimensional Space:</strong></p>
+<p>For each data point, t-SNE calculates the probability that other data points are its neighbors, based on their Euclidean distances.</p>
+<p>These probabilities are modeled using a Gaussian distribution, where closer points have higher probabilities of being neighbors.</p>
+<p>A key concept here is “perplexity,” which can be thought of as a measure of the effective number of neighbors for each point. It influences the standard deviation of the Gaussian kernels, adapting to the local density of the data.</p>
+<p><strong>Calculate Pairwise Similarities in Low-Dimensional Space:</strong></p>
+<p>Initially, data points are randomly placed in the lower-dimensional space.</p>
+<p>Similarities between these low-dimensional points are then calculated using a Student’s t-distribution (with one degree of freedom, also known as a Cauchy distribution). The heavy tails of the t-distribution allow dissimilar points to be placed further apart in the embedding, helping to prevent crowding in the center.</p>
+<p><strong>Minimize Kullback-Leibler Divergence:</strong></p>
+<p>The core of t-SNE lies in iteratively adjusting the positions of the low-dimensional points to minimize the difference between the high-dimensional and low-dimensional similarity distributions.</p>
+<p>This difference is quantified using the Kullback-Leibler (KL) divergence, a measure of how one probability distribution diverges from another.</p>
+<p>Gradient descent is used to optimize the positions of the low-dimensional points, pushing points with high similarity in the high-dimensional space closer together in the low-dimensional space, and pushing points with low similarity further apart.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>penguins <span class="ot">&lt;-</span> penguins <span class="sc">|&gt;</span> </span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">drop_na</span>() <span class="sc">|&gt;</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>year) <span class="sc">|&gt;</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">ID=</span><span class="fu">row_number</span>()) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(Rtsne)</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">142</span>)</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>tSNE_fit <span class="ot">&lt;-</span> penguins <span class="sc">|&gt;</span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">where</span>(is.numeric)) <span class="sc">|&gt;</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">column_to_rownames</span>(<span class="st">"ID"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale</span>() <span class="sc">|&gt;</span></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Rtsne</span>()</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>tSNE_fit<span class="sc">$</span>Y <span class="sc">|&gt;</span> <span class="fu">head</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>          [,1]     [,2]
+[1,]  7.909944 6.203389
+[2,] 10.524525 6.861234
+[3,] 13.387486 6.154607
+[4,]  5.860460 3.783936
+[5,]  2.159498 3.039864
+[6,] 10.021554 6.286049</code></pre>
+</div>
+</div>
+<p>Your turn: Visualize data in the reduced dimensional space generated by t-SNE</p>
+</section>
+</section>
+<section id="uniform-manifold-approximation-and-projection-umap" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> Uniform Manifold Approximation and Projection (UMAP)</h1>
+<p>Preserves both local and global structure: It tries to maintain the local neighborhood relationships between points as well as overall data structure better than some other methods.</p>
+<p>Faster than t-SNE: UMAP is typically faster than t-SNE, especially on larger datasets.</p>
+<p>Scalable: It can handle large datasets efficiently.</p>
+<p>Flexible: Parameters can be tuned to emphasize local versus global structure.</p>
+</section>
+<section id="summary" class="level1" data-number="6">
+<h1 data-number="6"><span class="header-section-number">6</span> Summary</h1>
+<ul>
+<li><p>Many dimensionality reduction methods like t-SNE focus mainly on preserving local structure but can distort global structure (clusters may look separated or mixed in misleading ways).</p></li>
+<li><p>Methods like PCA preserve global structure well (linear relationships and distances), but sometimes fail to capture complex local neighborhood patterns.</p></li>
+<li><p>UMAP tries to balance both: keeping local neighbors together while also maintaining a meaningful global layout</p></li>
+</ul>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
