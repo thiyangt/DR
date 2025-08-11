@@ -214,6 +214,34 @@ Scalable: It can handle large datasets efficiently.
 Flexible: Parameters can be tuned to emphasize local versus global structure.
 
 
+```{r}
+library(umap)
+set.seed(142)
+umap_fit <- penguins |>
+  select(where(is.numeric)) |>
+  column_to_rownames("ID") |>
+  scale() |>
+  umap()
+umap_fit
+```
+
+```{r}
+umap_df <- umap_fit$layout |>
+  as.data.frame() |>
+  rename(UMAP1="V1",
+         UMAP2="V2") |>
+  mutate(ID=row_number()) |>
+  inner_join(penguins, by="ID")
+
+umap_df |> head()
+```
+
+Your turn:  Visualize data using UMAP and identify interesting patterns/ anomalies.
+
+# Pairwise Attraction and Repulsion (PACmap)
+
+PACmap, or "Pairwise Attraction and Repulsion," is a dimensionality reduction technique similar to t-SNE or UMAP, designed to visualize high-dimensional data in a lower-dimensional space (typically 2D or 3D) while preserving local and global data structure.
+
 # Summary
 
 - Many dimensionality reduction methods like t-SNE focus mainly on preserving local structure but can distort global structure (clusters may look separated or mixed in misleading ways).
@@ -221,3 +249,13 @@ Flexible: Parameters can be tuned to emphasize local versus global structure.
 - Methods like PCA preserve global structure well (linear relationships and distances), but sometimes fail to capture complex local neighborhood patterns.
 
 - UMAP tries to balance both: keeping local neighbors together while also maintaining a meaningful global layout
+
+# Exercise
+
+https://github.com/jlmelville/snedata
+
+```r
+install.packages("remotes")
+remotes::install_github("jlmelville/snedata")
+mnist <- download_mnist()
+```
